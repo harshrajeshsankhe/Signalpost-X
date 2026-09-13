@@ -1333,3 +1333,27 @@ class VerifiedSiteSeedTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_revision_canonical_claims_reject_malformed_email_and_partial_social():
+    from agent.canonical_claims import valid_email, valid_social_url
+    assert valid_email("good@example.no")
+    assert not valid_email("good@example.no\n")
+    assert not valid_email("bad@@example.no")
+    assert valid_social_url("https://linkedin.com/company/acme")
+    assert not valid_social_url("https://linkedin.com/company/")
+    assert not valid_social_url("https://linkedin.com/company/acme?trk=x")
+
+
+def test_revision_external_claim_requires_retrievable_snapshot(tmp_path):
+    from agent.canonical_claims import promote_external_claims
+    raw=b"<html><title>Acme AS</title>acme@example.no https://linkedin.com/company/acme</html>"
+    import hashlib
+    digest=hashlib.sha256(raw).hexdigest()
+    profile={"organisation_number":"123456789","name":"Acme AS","claims":[]}
+    enrichment={"status":"available","pages":[{"url":"https://acme.no/","title":"Acme AS","text":"Acme AS acme@example.no https://linkedin.com/company/acme","retrieved_at":"2026-09-13T00:00:00Z","content_sha256":digest,"_raw":raw}],"facts":{"contact_emails":{"value":["acme@example.no"]},"social_links":{"value":[{"platform":"linkedin","url":"https://linkedin.com/company/acme"}]}}}
+    promote_external_claims(profile,enrichment,snapshot_dir=tmp_path)
+    assert len(profile["claims"])==2
+    assert all(c["evidence_ids"] for c in profile["claims"])
+    assert all(e["retrievable"] for e in profile["claim_evidence"])
+    assert (tmp_path/f"{digest}.html").read_bytes()==raw

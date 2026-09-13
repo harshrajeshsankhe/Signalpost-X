@@ -10,6 +10,7 @@ Rules:
 from __future__ import annotations
 import hashlib, html, ipaddress, re, socket, time, urllib.parse, urllib.request, urllib.robotparser
 from collections import deque
+from pathlib import Path
 
 UA='signalpost-x/1.1 (+https://builderr.ai)'
 
@@ -106,7 +107,7 @@ def _links(base:str,raw:bytes)->list[str]:
             if u not in out: out.append(u)
     return out
 
-def crawl(profile:dict,max_pages:int=8,timeout:float=12)->dict:
+def crawl(profile:dict,max_pages:int=8,timeout:float=12,snapshot_dir:str|None=None)->dict:
     root=str(profile.get('website') or '').strip()
     if not root: return {'status':'not_available','pages':[],'requests':0,'bytes':0,'identity':'not_checked'}
     if not root.startswith(('http://','https://')): root='https://'+root
@@ -123,7 +124,14 @@ def crawl(profile:dict,max_pages:int=8,timeout:float=12)->dict:
         if res['bytes']>750_000 or 'html' not in res['content_type'].lower(): continue
         text=_extract_identity_text(res['raw']); ident=identity(profile,text,url); scores.append(ident['score']); methods.append(ident['method'])
         title=(re.search(r'<title[^>]*>(.*?)</title>',res['raw'].decode('utf-8','replace'),re.I|re.S) or [None,''])[1].strip()[:500]
-        pages.append({'url':res['url'],'title':title,'text':text[:10000],'identity':ident,'content_sha256':hashlib.sha256(res['raw']).hexdigest(),'retrieved_at':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())})
+        digest=hashlib.sha256(res['raw']).hexdigest()
+        page_record={'url':res['url'],'title':title,'text':text[:10000],'identity':ident,'content_sha256':digest,'retrieved_at':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'_raw':res['raw']}
+        if snapshot_dir:
+            snap_dir=Path(snapshot_dir); snap_dir.mkdir(parents=True,exist_ok=True)
+            snap_path=snap_dir / f'{digest}.html'
+            if not snap_path.exists(): snap_path.write_bytes(res['raw'])
+            page_record['snapshot_path']=str(snap_path)
+        pages.append(page_record)
         if ident['publishable']:
             candidates=_links(res['url'],res['raw'])
             candidates.sort(key=lambda u:(0 if any(k in u.casefold() for k in PATH_HINTS) else 1,len(u),u))

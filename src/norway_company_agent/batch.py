@@ -130,6 +130,10 @@ def terminal_envelope(
             "final_timestamp": (record or {}).get("retrieved_at") or completed_at,
         }
     entity_state = "submission_error" if any(item["state"] == "submission_error" for item in module_states.values()) else "complete"
+    claim_evidence = list(profile.get("claim_evidence") or [])
+    claims = list(profile.get("claims") or [])
+    # The terminal envelope carries the canonical scored layer explicitly. This keeps
+    # the evaluator from having to infer claims from sidecar enrichment output.
     return {
         "run_id": run_id,
         "organisation_number": profile["organisation_number"],
@@ -137,6 +141,8 @@ def terminal_envelope(
         "started_at": started_at,
         "completed_at": completed_at,
         "modules": module_states,
+        "claims": claims,
+        "evidence": claim_evidence,
         "profile": profile,
     }
 
