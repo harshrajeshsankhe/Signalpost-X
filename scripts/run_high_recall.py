@@ -4,7 +4,7 @@ import argparse,json,time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import sys
-ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT))
+ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"src")); sys.path.insert(0,str(ROOT))
 from agent.high_recall import enrich_profile, merge_enrichment
 
 def read(path): return [json.loads(x) for x in Path(path).read_text(encoding='utf-8').splitlines() if x.strip()]

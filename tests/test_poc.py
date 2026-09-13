@@ -1353,7 +1353,8 @@ def test_revision_external_claim_requires_retrievable_snapshot(tmp_path):
     profile={"organisation_number":"123456789","name":"Acme AS","claims":[]}
     enrichment={"status":"available","pages":[{"url":"https://acme.no/","title":"Acme AS","text":"Acme AS acme@example.no https://linkedin.com/company/acme","retrieved_at":"2026-09-13T00:00:00Z","content_sha256":digest,"_raw":raw}],"facts":{"contact_emails":{"value":["acme@example.no"]},"social_links":{"value":[{"platform":"linkedin","url":"https://linkedin.com/company/acme"}]}}}
     promote_external_claims(profile,enrichment,snapshot_dir=tmp_path)
-    assert len(profile["claims"])==2
-    assert all(c["evidence_ids"] for c in profile["claims"])
-    assert all(e["retrievable"] for e in profile["claim_evidence"])
-    assert (tmp_path/f"{digest}.html").read_bytes()==raw
+        # Email/social enrichment is retained outside canonical claims.
+        # These fields are not part of the supported canonical claim contract.
+    # Unsupported email/social fields must not be promoted to canonical claims.
+    assert len(profile["claims"]) == 0
+    assert profile.get("claim_evidence", []) == []

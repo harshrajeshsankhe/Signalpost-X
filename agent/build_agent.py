@@ -31,6 +31,13 @@ def main():
         enriched_rows=[json.loads(line) for line in enriched.read_text(encoding='utf-8').splitlines() if line.strip()]
         if len(enriched_rows) != a.expected_count:
             raise SystemExit(f'High-recall output count mismatch: expected {a.expected_count}, got {len(enriched_rows)}')
+        # The enriched profiles are the canonical submitted profiles. Keeping the
+        # base profiles.jsonl as the submitted artifact was the main reason the
+        # previous revision regenerated nothing useful for the 1,000-profile entry.
+        profiles.write_text(
+            "".join(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n" for row in enriched_rows),
+            encoding="utf-8",
+        )
         import importlib.util
         spec=importlib.util.spec_from_file_location('competition_batch', ROOT/'scripts/run_competition_batch.py')
         mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)

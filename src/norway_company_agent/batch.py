@@ -143,6 +143,7 @@ def terminal_envelope(
         "modules": module_states,
         "claims": claims,
         "evidence": claim_evidence,
+        "external_observations": list(profile.get("external_observations") or []),
         "profile": profile,
     }
 

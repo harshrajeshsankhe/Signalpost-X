@@ -25,3 +25,9 @@ sentiment = [
 
 [tool.uv]
 package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-subtests>=0.15.0",
+]

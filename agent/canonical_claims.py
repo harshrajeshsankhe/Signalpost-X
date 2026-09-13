@@ -114,10 +114,10 @@ def promote_external_claims(
 ) -> dict[str, Any]:
     """Promote only validated website-derived facts into profile.claims."""
 
+    SUPPORTED_EXTERNAL_FIELDS = {"official_website"}
     existing = [
-        c
-        for c in profile.get("claims", [])
-        if not str(c.get("field", "")).startswith("external_")
+        c for c in profile.get("claims", [])
+        if str(c.get("field", "")) not in SUPPORTED_EXTERNAL_FIELDS
     ]
 
     evidence_rows = list(profile.get("claim_evidence", []))
@@ -176,29 +176,38 @@ def promote_external_claims(
 
     facts = enrichment.get("facts") or {}
 
-    email_fact=facts.get("contact_emails",{}) or {}; email_items=email_fact.get("items") or [{"value":e,"source":pages[0],"claim_span":e} for e in email_fact.get("value",[]) or []]
-    for item in email_items:
-        email=str(item.get("value") or ""); source=item.get("source") or {}; span=item.get("claim_span") or email
-        if valid_email(email): add_claim("external_contact_email",email,source,confidence=0.995,claim_span=span)
-    social_fact=facts.get("social_links",{}) or {}; social_items=social_fact.get("items") or [{"platform":x.get("platform"),"url":x.get("url"),"source":pages[0],"claim_span":x.get("url")} for x in social_fact.get("value",[]) or [] if isinstance(x,dict)]
-    for item in social_items:
-        platform=str(item.get("platform") or "").casefold(); url=str(item.get("url") or ""); source=item.get("source") or {}; span=item.get("claim_span") or url
-        if platform and valid_social_url(url,platform): add_claim("external_social_profile",{"platform":platform,"url":url},source,confidence=0.99,claim_span=span)
+    website_url = str(profile.get("website") or "").strip()
+    if website_url and not website_url.startswith(("http://", "https://")):
+        website_url = f"https://{website_url}"
+
+    if website_url:
+        website_domain = website_url.rstrip("/").lower()
+        for page in pages:
+            source = page or {}
+            source_url = str(source.get("url") or "").strip()
+            if not source_url:
+                continue
+            if source_url.rstrip("/").lower() != website_domain:
+                continue
+
+            add_claim(
+                "official_website",
+                source_url,
+                source,
+                source_class="company_owned",
+                confidence=0.995,
+                claim_span=source.get("title") or source.get("text", "")[:500],
+            )
+            break
 
     profile["claims"] = claims
     profile["claim_evidence"] = evidence_rows
     profile["claim_validation"] = {
-        "external_claims": len(
-            [
-                c
-                for c in claims
-                if str(c.get("field", "")).startswith("external_")
-            ]
-        ),
+        "external_claims": len([c for c in claims if str(c.get("field", "")) in SUPPORTED_EXTERNAL_FIELDS]),
         "all_external_claims_have_evidence": all(
             c.get("evidence_ids")
             for c in claims
-            if str(c.get("field", "")).startswith("external_")
+            if str(c.get("field", "")) in SUPPORTED_EXTERNAL_FIELDS
         ),
         "retrievable_snapshots": sum(
             1 for e in evidence_rows if e.get("retrievable")
