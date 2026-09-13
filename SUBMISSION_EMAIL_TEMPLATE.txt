@@ -1,0 +1,35 @@
+To: submit@builderr.ai
+Subject: Signalpost submission — Signalpost X — [FINAL COMMIT SHA]
+
+Hi Builderr team,
+
+Please review my Signalpost submission.
+
+Agent: Signalpost X — Evidence-First Norwegian Company Intelligence Agent
+Repository: [PUBLIC REPOSITORY URL]
+Frozen commit: [FINAL COMMIT SHA]
+
+Run command:
+./RUN_LIVE_SUBMISSION.sh
+
+Submitted organisation-number manifest:
+out/entry-companies.jsonl
+
+Models / APIs:
+- Deterministic evidence-first identity and publication gates
+- Optional licensed search/discovery provider only when explicitly configured
+- No LLM is used to invent or decide company identity
+
+Source / rights:
+- Official Brønnøysund Register Centre data for registry/financial/role/location evidence
+- Company-owned public web pages where permitted
+- Only permitted/licensed external providers; blocked or unavailable sources remain explicit
+
+Expected external API cost per 100-company batch: <= $10 hard budget; cache hits are free.
+Outbound request budget: <= 2,000 per daily batch.
+
+The repository contains the reproducible setup, output contract, evidence model,
+refresh replay fixture, audit tooling and deterministic route-selection policy.
+
+Thanks,
+Harsh Sankhe
