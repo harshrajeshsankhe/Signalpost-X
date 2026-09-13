@@ -1,0 +1,12 @@
+{
+  "profiles": 1000,
+  "site_available": 41,
+  "site_ambiguous": 74,
+  "site_not_available": 885,
+  "failed": 0,
+  "requests": 848,
+  "bytes": 57556262,
+  "elapsed_seconds": 141.44,
+  "max_pages": 8,
+  "workers": 8
+}

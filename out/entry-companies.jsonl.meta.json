@@ -1,0 +1,39 @@
+{
+  "agent": "Signalpost X",
+  "seed": 20260913,
+  "universe_rows": 411160,
+  "selected": 1000,
+  "strata": 10332,
+  "selected_sha256": "9db836e7a73789ed2788378c252e19bb933a41df4ae8be8b4c4ba0ddf3102828",
+  "web_count": 456,
+  "no_web_count": 544,
+  "legal_forms": {
+    "ANNA": 4,
+    "ANS": 17,
+    "AS": 619,
+    "ASA": 16,
+    "BA": 1,
+    "BBL": 4,
+    "BRL": 6,
+    "DA": 28,
+    "ENK": 23,
+    "ESEK": 6,
+    "FLI": 37,
+    "GFS": 1,
+    "IKS": 9,
+    "KS": 1,
+    "NUF": 77,
+    "PK": 4,
+    "PRE": 3,
+    "SA": 62,
+    "SAM": 5,
+    "SPA": 2,
+    "STI": 70,
+    "SÆR": 5
+  },
+  "evaluation_splits": {
+    "development": 600,
+    "validation": 200,
+    "held_out": 200
+  }
+}
